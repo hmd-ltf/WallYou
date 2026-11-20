@@ -115,4 +115,25 @@
     <string name="saving_wallpaper">Saving Wallpaper</string>
     <string name="applying_wallpaper">Applying Wallpaper</string>
     <string name="dismiss">Dismiss</string>
+    <string name="popular_tags">Popular tags</string>
+    <string name="include">Include</string>
+    <string name="exclude">Exclude</string>
+    <string name="tags_input_hint">Separate multiple tags with commas</string>
+    <string name="any">Any</string>
+    <plurals name="n_selected">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <string name="accounts">Accounts</string>
+    <string name="log_in">Log in</string>
+    <string name="log_out">Log out</string>
+    <string name="log_in_to">Log in to %1$s</string>
+    <string name="api_key">API key</string>
+    <string name="get_api_key">Get API key</string>
+    <string name="logged_in">Logged in</string>
+    <string name="invalid_api_key">Invalid API key</string>
+    <string name="api_key_login_desc">Log in with your API key to unlock NSFW wallpapers. Once logged in, select NSFW in the purity filter.</string>
+    <string name="show_api_key">Show API key</string>
+    <string name="hide_api_key">Hide API key</string>
+    <string name="log_in_to_unlock_nsfw">Log in from the settings to unlock NSFW wallpapers</string>
 </resources>

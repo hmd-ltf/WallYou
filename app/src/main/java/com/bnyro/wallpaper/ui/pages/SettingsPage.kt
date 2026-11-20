@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.bnyro.wallpaper.App
 import com.bnyro.wallpaper.R
 import com.bnyro.wallpaper.enums.ThemeMode
 import com.bnyro.wallpaper.ext.formatBinarySize
@@ -47,6 +48,7 @@ import com.bnyro.wallpaper.obj.WallpaperConfig
 import com.bnyro.wallpaper.ui.components.ButtonWithIcon
 import com.bnyro.wallpaper.ui.components.WallpaperChangerPrefDialog
 import com.bnyro.wallpaper.ui.components.about.AboutContainer
+import com.bnyro.wallpaper.ui.components.prefs.ApiKeyPref
 import com.bnyro.wallpaper.ui.components.prefs.CheckboxPref
 import com.bnyro.wallpaper.ui.components.prefs.ListPreference
 import com.bnyro.wallpaper.ui.components.prefs.SettingsCategory
@@ -115,6 +117,20 @@ fun SettingsPage(
                     title = stringResource(R.string.auto_darken_lighten_by_theme),
                     summary = stringResource(R.string.auto_darken_lighten_by_theme_desc)
                 )
+            }
+        }
+
+        val apisWithLogin = remember { App.apis.filter { it.supportsApiKey } }
+        if (apisWithLogin.isNotEmpty()) {
+            AboutContainer {
+                Column {
+                    SettingsCategory(
+                        title = stringResource(R.string.accounts)
+                    )
+                    apisWithLogin.forEach { api ->
+                        ApiKeyPref(api = api)
+                    }
+                }
             }
         }
 
