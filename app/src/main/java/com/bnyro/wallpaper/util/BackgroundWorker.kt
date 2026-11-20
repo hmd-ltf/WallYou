@@ -9,6 +9,7 @@ import com.bnyro.wallpaper.db.DatabaseHolder
 import com.bnyro.wallpaper.db.obj.Wallpaper
 import com.bnyro.wallpaper.enums.WallpaperSource
 import com.bnyro.wallpaper.obj.WallpaperConfig
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Random
@@ -47,71 +48,107 @@ class BackgroundWorker(
      * @return Whether the wallpaper change applied successfully without errors
      */
     private suspend fun runWallpaperChanger(config: WallpaperConfig): Boolean {
-        val bitmap = when (config.source) {
-            WallpaperSource.ONLINE -> getOnlineWallpaper(config)
-            WallpaperSource.FAVORITES -> getFavoritesWallpaper()
-            WallpaperSource.LOCAL -> getLocalWallpaper(config)
-        } ?: return false
+        return try {
+            // Images are loaded only as large as needed to cover the screen in any orientation.
+            // Loading photos and online wallpapers at full resolution can use hundreds of MB and
+            // make the worker run out of memory, so the wallpaper silently never changes.
+            val (screenWidth, screenHeight) = WallpaperHelper.getMetrics(applicationContext)
+            val minSideLength = maxOf(screenWidth, screenHeight)
 
-        if (config.applyImageFilters) {
-            WallpaperHelper.setWallpaperWithFilters(
-                applicationContext,
-                bitmap,
-                config.target
-            )
-        } else {
-            WallpaperHelper.setWallpaperWithoutFilters(
-                applicationContext,
-                bitmap,
-                config.target
-            )
+            val (bitmap, onlineUrl) = when (config.source) {
+                WallpaperSource.ONLINE -> getOnlineWallpaper(config, minSideLength)
+                WallpaperSource.FAVORITES -> getFavoritesWallpaper(minSideLength) to null
+                WallpaperSource.LOCAL -> getLocalWallpaper(config, minSideLength) to null
+            }
+            if (bitmap == null) return false
+
+            if (config.applyImageFilters) {
+                WallpaperHelper.setWallpaperWithFilters(
+                    applicationContext,
+                    bitmap,
+                    config.target
+                )
+            } else {
+                WallpaperHelper.setWallpaperWithoutFilters(
+                    applicationContext,
+                    bitmap,
+                    config.target
+                )
+            }
+
+            // only add the wallpaper to the history once it has actually been applied
+            if (onlineUrl != null && Preferences.getBoolean(Preferences.wallpaperHistory, true)) {
+                withContext(Dispatchers.IO) {
+                    val wallpaper = Wallpaper(imgSrc = onlineUrl)
+                    DatabaseHolder.Database.favoritesDao().insert(wallpaper, null, true)
+                }
+            }
+
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            // also catches OutOfMemoryError, so that one failing config doesn't stop the others
+            Log.e(TAG, "Failed to change wallpaper", e)
+            false
         }
-
-        return true
     }
 
-    private suspend fun getOnlineWallpaper(config: WallpaperConfig): Bitmap? {
-        val source = config.selectedApiRoutes.ifEmpty { return null }.random()
+    /** @return the loaded wallpaper and the URL it was loaded from */
+    private suspend fun getOnlineWallpaper(
+        config: WallpaperConfig,
+        minSideLength: Int
+    ): Pair<Bitmap?, String?> {
+        val source = config.selectedApiRoutes.ifEmpty { return null to null }.random()
 
         return withContext(Dispatchers.IO) {
             val url = try {
                 Preferences.getApiByRoute(source).getRandomWallpaperUrl()
             } catch (e: Exception) {
-                Log.e(this@BackgroundWorker::class.simpleName, e.toString())
-                return@withContext null
-            } ?: return@withContext null
+                Log.e(TAG, e.toString())
+                return@withContext null to null
+            } ?: return@withContext null to null
 
-            val bitmap = ImageHelper.urlToBitmap(url, applicationContext, forceReload = true)
-            if (bitmap != null && Preferences.getBoolean(Preferences.wallpaperHistory, true)) {
-                val wallpaper = Wallpaper(imgSrc = url)
-                DatabaseHolder.Database.favoritesDao().insert(wallpaper, null, true)
-            }
-
-            bitmap
+            val bitmap = ImageHelper.urlToBitmap(
+                url,
+                applicationContext,
+                forceReload = true,
+                minSideLength = minSideLength
+            )
+            bitmap to url
         }
     }
 
-    private suspend fun getFavoritesWallpaper(): Bitmap? {
+    private suspend fun getFavoritesWallpaper(minSideLength: Int): Bitmap? {
         val favoriteUrl = withContext(Dispatchers.IO) {
             DatabaseHolder.Database.favoritesDao().getRandomFavorite()
         }?.imgSrc
-        return ImageHelper.urlToBitmap(favoriteUrl, applicationContext, forceReload = true)
+        return ImageHelper.urlToBitmap(
+            favoriteUrl,
+            applicationContext,
+            forceReload = true,
+            minSideLength = minSideLength
+        )
     }
 
-    private fun getLocalWallpaper(config: WallpaperConfig): Bitmap? {
-        return try {
+    private suspend fun getLocalWallpaper(config: WallpaperConfig, minSideLength: Int): Bitmap? {
+        return withContext(Dispatchers.IO) {
             val wallpapers = LocalWallpaperHelper.getLocalWalls(applicationContext, config)
-            if (wallpapers.isEmpty()) return null
+            if (wallpapers.isEmpty()) {
+                Log.e(TAG, "No images found in the selected folders")
+                return@withContext null
+            }
 
             // use Java's random number generator with a custom seed instead of Kotlin's
             // see https://stackoverflow.com/questions/73475522/kotlin-random-always-generates-the-same-random-numbers
             val randomGenerator = Random(System.currentTimeMillis())
             val randomIndex = randomGenerator.nextInt(wallpapers.size)
 
-            ImageHelper.getLocalImage(applicationContext, wallpapers[randomIndex].uri)
-        } catch (e: Exception) {
-            Log.e(this@BackgroundWorker::class.simpleName, e.toString())
-            null
+            ImageHelper.getLocalImage(applicationContext, wallpapers[randomIndex], minSideLength)
         }
+    }
+
+    companion object {
+        private const val TAG = "BackgroundWorker"
     }
 }
