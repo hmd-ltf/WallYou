@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -163,30 +164,44 @@ fun WallpaperChangerPrefDialog(
                 var intervalHours by remember {
                     mutableIntStateOf(changeInterval / 60 % 24)
                 }
-                LaunchedEffect(intervalDays, intervalHours) {
-                    changeInterval = ((intervalDays * 24) + intervalHours) * 60
+                // Android doesn't run periodic background work more often than every 15 minutes,
+                // so minutes can only be chosen in steps of that size
+                var intervalMinutesIndex by remember {
+                    mutableIntStateOf(
+                        (changeInterval % 60 / MINUTE_STEP).coerceIn(MINUTE_STEPS.indices)
+                    )
+                }
+                LaunchedEffect(intervalDays, intervalHours, intervalMinutesIndex) {
+                    changeInterval = ((intervalDays * 24) + intervalHours) * 60 +
+                        MINUTE_STEPS[intervalMinutesIndex]
                 }
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    NumberPicker(
+                    IntervalPicker(
                         modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.days),
                         items = (0..90).map { it.toString() },
                         startIndex = intervalDays
                     ) { index ->
                         intervalDays = index
                     }
-                    Text(text = stringResource(R.string.days))
-
-                    NumberPicker(
+                    IntervalPicker(
                         modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.hours),
                         items = (0..23).map { it.toString() },
                         startIndex = intervalHours
                     ) { index ->
                         intervalHours = index
                     }
-                    Text(text = stringResource(R.string.hours))
+                    IntervalPicker(
+                        modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.minutes),
+                        items = MINUTE_STEPS.map { it.toString() },
+                        startIndex = intervalMinutesIndex
+                    ) { index ->
+                        intervalMinutesIndex = index
+                    }
                 }
 
                 AnimatedVisibility(visible = wallpaperSource != WallpaperSource.LOCAL) {
@@ -354,4 +369,32 @@ fun WallpaperChangerPrefDialog(
             }
         }
     )
+}
+
+private const val MINUTE_STEP = 15
+private val MINUTE_STEPS = (0 until 60 step MINUTE_STEP).toList()
+
+@Composable
+private fun IntervalPicker(
+    modifier: Modifier,
+    label: String,
+    items: List<String>,
+    startIndex: Int,
+    onItemSelected: (Int) -> Unit
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        NumberPicker(
+            items = items,
+            startIndex = startIndex,
+            onItemSelected = onItemSelected
+        )
+        Text(
+            text = label,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }

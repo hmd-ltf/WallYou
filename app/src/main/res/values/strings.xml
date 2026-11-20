@@ -69,6 +69,7 @@
     <string name="invalid_time_interval">Invalid time interval</string>
     <string name="days">days</string>
     <string name="hours">hours</string>
+    <string name="minutes">minutes</string>
     <!-- Network constraints -->
     <string name="network_type">Network type</string>
     <string name="all_networks">All networks</string>
