@@ -58,19 +58,20 @@ object WallpaperHelper {
 
     fun setWallpaper(context: Context, bitmap: Bitmap, mode: WallpaperTarget) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (mode in listOf(WallpaperTarget.BOTH, WallpaperTarget.HOME)) {
-                setWallpaperUp(context, bitmap, WallpaperManager.FLAG_SYSTEM)
+            // set both in a single call, so the image is only encoded and sent to the system once
+            val flags = when (mode) {
+                WallpaperTarget.HOME -> WallpaperManager.FLAG_SYSTEM
+                WallpaperTarget.LOCK -> WallpaperManager.FLAG_LOCK
+                WallpaperTarget.BOTH -> WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
             }
-            if (mode in listOf(WallpaperTarget.BOTH, WallpaperTarget.LOCK)) {
-                setWallpaperUp(context, bitmap, WallpaperManager.FLAG_LOCK)
-            }
+            setWallpaperUp(context, bitmap, flags)
         } else {
             setWallpaperLegacy(context, bitmap)
         }
     }
 
     /** The display size in its natural orientation, which is how a wallpaper is stored. */
-    private fun getMetrics(context: Context): Pair<Int, Int> {
+    fun getMetrics(context: Context): Pair<Int, Int> {
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         val (width, height) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

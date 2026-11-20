@@ -218,7 +218,7 @@ fun SettingsPage(
                             onConfigChange = { newConfig ->
                                 wallpaperConfigs[index] = newConfig
                                 Preferences.setWallpaperConfigs(wallpaperConfigs)
-                                WorkerHelper.enqueue(context, newConfig, true)
+                                WorkerHelper.enqueueOrCancelAll(context, listOf(newConfig), true)
                             },
                             onDismissRequest = { wallpaperConfigDialogIndex = null }
                         )
@@ -252,7 +252,7 @@ fun SettingsPage(
                             onConfigChange = { newConfig ->
                                 wallpaperConfigs.add(newConfig)
                                 Preferences.setWallpaperConfigs(wallpaperConfigs)
-                                WorkerHelper.enqueue(context, newConfig, true)
+                                WorkerHelper.enqueueOrCancelAll(context, listOf(newConfig), true)
                             },
                             onDismissRequest = { newWallpaperConfig = null }
                         )
