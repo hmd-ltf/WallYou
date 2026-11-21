@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.SaveAlt
 import androidx.compose.material.icons.rounded.Smartphone
 import androidx.compose.material.icons.rounded.Wallpaper
@@ -37,6 +38,7 @@ fun WallpaperToolbar(
     onClickDownload: () -> Unit,
     onClickWallpaper: () -> Unit,
     onClickPreview: () -> Unit,
+    onClickTheme: () -> Unit,
     isFavourite: Boolean
 ) {
     HorizontalFloatingToolbar(
@@ -66,6 +68,12 @@ fun WallpaperToolbar(
             title = stringResource(R.string.preview),
         ) {
             onClickPreview.invoke()
+        }
+        IconWithText(
+            imageVector = Icons.Rounded.Palette,
+            title = stringResource(R.string.material_theme),
+        ) {
+            onClickTheme.invoke()
         }
         IconWithText(
             imageVector = Icons.Rounded.SaveAlt,
