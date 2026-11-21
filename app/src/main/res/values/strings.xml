@@ -135,5 +135,7 @@
     <string name="api_key_login_desc">Log in with your API key to unlock NSFW wallpapers. Once logged in, select NSFW in the purity filter.</string>
     <string name="show_api_key">Show API key</string>
     <string name="hide_api_key">Hide API key</string>
+    <string name="preview">Preview</string>
+    <string name="wallpaper_only">Wallpaper only</string>
     <string name="log_in_to_unlock_nsfw">Log in from the settings to unlock NSFW wallpapers</string>
 </resources>

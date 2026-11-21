@@ -66,6 +66,7 @@ fun WallpaperView(
     var showEditView by remember { mutableStateOf(false) }
     var showInfoSheet by remember { mutableStateOf(false) }
     var showModeSelection by remember { mutableStateOf(false) }
+    var showPreview by remember { mutableStateOf(false) }
     var liked by remember { mutableStateOf(false) }
     LaunchedEffect(true) {
         withContext(Dispatchers.IO) {
@@ -164,6 +165,9 @@ fun WallpaperView(
                 onClickWallpaper = {
                     showModeSelection = true
                 },
+                onClickPreview = {
+                    showPreview = true
+                },
                 onClickDownload = {
                     val prefix = wallpaper.title ?: wallpaper.category ?: wallpaper.author
                     val timeStamp = Instant.now().epochSecond
@@ -188,6 +192,16 @@ fun WallpaperView(
                 showEditView = false
             }
         }
+    }
+    if (showPreview) {
+        WallpaperPreview(
+            wallpaper = wallpaper,
+            onApply = {
+                showPreview = false
+                showModeSelection = true
+            },
+            onDismissRequest = { showPreview = false }
+        )
     }
     if (showInfoSheet) {
         WallpaperInfoSheet(onDismissRequest = { showInfoSheet = false }, wallpaper = wallpaper)
