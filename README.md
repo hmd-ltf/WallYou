@@ -6,7 +6,6 @@
 
 <!-- ---------- Badges ---------- -->
   <div align="center">
-    <a href="https://github.com/hmd-ltf/WallYou/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/hmd-ltf/WallYou?color=c3e7ff&style=flat-square"></a>
     <img alt="License" src="https://img.shields.io/github/license/hmd-ltf/WallYou?color=c3e7ff&style=flat-square">
     <img alt="Downloads" src="https://img.shields.io/github/downloads/hmd-ltf/WallYou/total.svg?color=c3e7ff&style=flat-square">
     <img alt="Last commit" src="https://img.shields.io/github/last-commit/hmd-ltf/WallYou?color=c3e7ff&style=flat-square">
@@ -35,19 +34,14 @@
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/com.bnyro.wallpaper/)
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.bnyro.wallpaper)
-[<img src="https://raw.githubusercontent.com/vadret/android/master/assets/get-github.png" alt="Get it on GitHub" height="80">](https://github.com/hmd-ltf/WallYou/releases/latest)
+[<img src="https://raw.githubusercontent.com/vadret/android/master/assets/get-github.png" alt="Get it on GitHub" height="80">](https://github.com/hmd-ltf/WallYou/releases)
 
 </div>
 
-F-Droid and IzzyOnDroid ship the upstream [you-apps/WallYou](https://github.com/you-apps/WallYou) builds. The features added in this fork are only in the APKs on this repository's Releases page.
+F-Droid and IzzyOnDroid ship the upstream [you-apps/WallYou](https://github.com/you-apps/WallYou) builds. The features added in this fork are only in APKs built from this repository, either from the [Releases page](https://github.com/hmd-ltf/WallYou/releases) or built yourself.
 
 <!-- ---------- Releases ---------- -->
 ## Releases
-
-[![Latest release](https://img.shields.io/github/v/release/hmd-ltf/WallYou?label=latest&color=c3e7ff&style=flat-square)](https://github.com/hmd-ltf/WallYou/releases/latest)
-[![Release date](https://img.shields.io/github/release-date/hmd-ltf/WallYou?color=c3e7ff&style=flat-square)](https://github.com/hmd-ltf/WallYou/releases/latest)
-
-Every version is published on the [Releases page](https://github.com/hmd-ltf/WallYou/releases) with a signed APK (`WallYou-vX.Y.apk`) and the list of changes since the previous release. Download the APK on your phone and open it to install or update.
 
 ### What's new in v18.0
 
@@ -58,26 +52,25 @@ Every version is published on the [Releases page](https://github.com/hmd-ltf/Wal
 - Preview how a wallpaper looks on your home and lock screen before applying it
 - See the Material You theme Android would generate from a wallpaper
 
+### Build it yourself
+
+You need JDK 17 and the Android SDK (e.g. installed with Android Studio).
+
+```bash
+git clone https://github.com/hmd-ltf/WallYou.git
+cd WallYou
+./gradlew assembleDebug
+```
+
+The APK is written to `app/build/outputs/apk/debug/app-debug.apk`. Install it with `adb install app/build/outputs/apk/debug/app-debug.apk` or copy it to your phone and open it. Debug builds install next to the regular app as "Wall You (debug)".
+
 ### Publishing a release
 
-Releases are built, signed and published by the [Build and release app](.github/workflows/build-release.yml) workflow.
+Nothing is built on GitHub; releases are built and uploaded by hand.
 
 1. Bump `versionCode` and `versionName` in [`app/build.gradle.kts`](app/build.gradle.kts) and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
-2. Start the release in one of two ways:
-   - push a tag such as `v18.0`, or
-   - open **Actions → Build and release app → Run workflow** and enter the version tag.
-3. The workflow signs the APK and publishes the release with notes generated from the merged pull requests.
-
-The workflow needs these repository secrets (**Settings → Secrets and variables → Actions**). Keep using the same keystore, otherwise installed apps can't update to the new release.
-
-| Secret | Value |
-| --- | --- |
-| `KEYSTORE` | The release keystore file, base64 encoded (`base64 -w 0 release.jks`) |
-| `SIGNING_KEY_ALIAS` | Alias of the key in the keystore |
-| `SIGNING_STORE_PASSWORD` | Keystore password |
-| `SIGNING_KEY_PASSWORD` | Key password |
-
-To create a keystore: `keytool -genkeypair -v -keystore release.jks -alias wallyou -keyalg RSA -keysize 4096 -validity 10000`
+2. Build the APK: `./gradlew assembleRelease`, then sign `app/build/outputs/apk/release/app-release-unsigned.apk` with your own key using `apksigner` from the Android SDK build tools. Keep the key safe and outside this repository, and use the same one for every release so installed apps can update.
+3. Upload it: `gh release create v18.0 WallYou-v18.0.apk --title "Wall You v18.0" --generate-notes`
 
 <!-- ---------- Screenshots ---------- -->
 ## Screenshots
