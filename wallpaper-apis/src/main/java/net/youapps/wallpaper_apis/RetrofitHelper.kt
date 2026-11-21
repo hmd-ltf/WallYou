@@ -24,6 +24,9 @@ object RetrofitHelper {
 
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        // never leak credentials of logged in users to the logs
+        loggingInterceptor.redactHeader("X-API-Key")
+        loggingInterceptor.redactHeader("Authorization")
         builder.addInterceptor(loggingInterceptor)
 
         // add user agent to all requests

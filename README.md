@@ -6,11 +6,12 @@
 
 <!-- ---------- Badges ---------- -->
   <div align="center">
-    <img alt="License" src="https://img.shields.io/github/license/you-apps/WallYou?color=c3e7ff&style=flat-square">
-    <img alt="Downloads" src="https://img.shields.io/github/downloads/you-apps/WallYou/total.svg?color=c3e7ff&style=flat-square">
-    <img alt="Last commit" src="https://img.shields.io/github/last-commit/you-apps/WallYou?color=c3e7ff&style=flat-square">
-    <img alt="Repo size" src="https://img.shields.io/github/repo-size/you-apps/WallYou?color=c3e7ff&style=flat-square">
-    <img alt="Stars" src="https://img.shields.io/github/stars/you-apps/WallYou?color=c3e7ff&style=flat-square">
+    <a href="https://github.com/hmd-ltf/WallYou/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/hmd-ltf/WallYou?color=c3e7ff&style=flat-square"></a>
+    <img alt="License" src="https://img.shields.io/github/license/hmd-ltf/WallYou?color=c3e7ff&style=flat-square">
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/hmd-ltf/WallYou/total.svg?color=c3e7ff&style=flat-square">
+    <img alt="Last commit" src="https://img.shields.io/github/last-commit/hmd-ltf/WallYou?color=c3e7ff&style=flat-square">
+    <img alt="Repo size" src="https://img.shields.io/github/repo-size/hmd-ltf/WallYou?color=c3e7ff&style=flat-square">
+    <img alt="Stars" src="https://img.shields.io/github/stars/hmd-ltf/WallYou?color=c3e7ff&style=flat-square">
     <br>
 </div>
 </div>
@@ -23,6 +24,10 @@
 - [x] Favorites List
 - [x] Wallpaper History
 - [x] Image Filter Effects
+- [x] Wallhaven multi-select filters (categories, purity, ratios, resolutions, colors) and tag suggestions
+- [x] Wallhaven login with an API key to unlock NSFW wallpapers
+- [x] Full-screen home and lock screen preview before applying a wallpaper
+- [x] Material You theme preview generated from any wallpaper
 
 <!-- ---------- Download ---------- -->
 ## Download
@@ -30,9 +35,49 @@
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/com.bnyro.wallpaper/)
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.bnyro.wallpaper)
-[<img src="https://raw.githubusercontent.com/vadret/android/master/assets/get-github.png" alt="Get it on GitHub" height="80">](https://github.com/you-apps/WallYou/releases)
+[<img src="https://raw.githubusercontent.com/vadret/android/master/assets/get-github.png" alt="Get it on GitHub" height="80">](https://github.com/hmd-ltf/WallYou/releases/latest)
 
 </div>
+
+F-Droid and IzzyOnDroid ship the upstream [you-apps/WallYou](https://github.com/you-apps/WallYou) builds. The features added in this fork are only in the APKs on this repository's Releases page.
+
+<!-- ---------- Releases ---------- -->
+## Releases
+
+[![Latest release](https://img.shields.io/github/v/release/hmd-ltf/WallYou?label=latest&color=c3e7ff&style=flat-square)](https://github.com/hmd-ltf/WallYou/releases/latest)
+[![Release date](https://img.shields.io/github/release-date/hmd-ltf/WallYou?color=c3e7ff&style=flat-square)](https://github.com/hmd-ltf/WallYou/releases/latest)
+
+Every version is published on the [Releases page](https://github.com/hmd-ltf/WallYou/releases) with a signed APK (`WallYou-vX.Y.apk`) and the list of changes since the previous release. Download the APK on your phone and open it to install or update.
+
+### What's new in v18.0
+
+- Wallhaven: select several categories, purities, aspect ratios and resolutions at once
+- Wallhaven: new minimum resolution, color, toplist range and "Hot" sorting filters
+- Tags: popular tag suggestions, excluded tags and adding several tags at once
+- Log in to Wallhaven with your API key in the settings to unlock NSFW wallpapers
+- Preview how a wallpaper looks on your home and lock screen before applying it
+- See the Material You theme Android would generate from a wallpaper
+
+### Publishing a release
+
+Releases are built, signed and published by the [Build and release app](.github/workflows/build-release.yml) workflow.
+
+1. Bump `versionCode` and `versionName` in [`app/build.gradle.kts`](app/build.gradle.kts) and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
+2. Start the release in one of two ways:
+   - push a tag such as `v18.0`, or
+   - open **Actions → Build and release app → Run workflow** and enter the version tag.
+3. The workflow signs the APK and publishes the release with notes generated from the merged pull requests.
+
+The workflow needs these repository secrets (**Settings → Secrets and variables → Actions**). Keep using the same keystore, otherwise installed apps can't update to the new release.
+
+| Secret | Value |
+| --- | --- |
+| `KEYSTORE` | The release keystore file, base64 encoded (`base64 -w 0 release.jks`) |
+| `SIGNING_KEY_ALIAS` | Alias of the key in the keystore |
+| `SIGNING_STORE_PASSWORD` | Keystore password |
+| `SIGNING_KEY_PASSWORD` | Key password |
+
+To create a keystore: `keytool -genkeypair -v -keystore release.jks -alias wallyou -keyalg RSA -keysize 4096 -validity 10000`
 
 <!-- ---------- Screenshots ---------- -->
 ## Screenshots
@@ -50,7 +95,7 @@
 ***All contributions are very welcome!***
 
 * Feel free to join the [Matrix room](https://matrix.to/#/#you-apps:matrix.org) for discussions about the app.
-* Bug reports and feature requests can be submitted [here](https://github.com/you-apps/WallYou/issues) (please make sure to fill out all the requested information properly!).
+* Bug reports and feature requests can be submitted [here](https://github.com/hmd-ltf/WallYou/issues) (please make sure to fill out all the requested information properly!).
 * If you are a developer and wish to contribute to the app, please **fork** the project and submit a [**pull request**](https://help.github.com/articles/about-pull-requests/).
 
 ## Translation

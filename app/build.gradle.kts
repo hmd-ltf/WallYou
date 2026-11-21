@@ -15,8 +15,8 @@ android {
         applicationId = "com.bnyro.wallpaper"
         minSdk = 24
         targetSdk = 36
-        versionCode = 43
-        versionName = "17.1"
+        versionCode = 44
+        versionName = "18.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -99,6 +99,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("androidx.palette:palette-ktx:1.0.0")
+    // Material You color scheme generation from wallpapers
+    implementation("com.materialkolor:material-color-utilities:6.0.0")
 
     // Settings serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")

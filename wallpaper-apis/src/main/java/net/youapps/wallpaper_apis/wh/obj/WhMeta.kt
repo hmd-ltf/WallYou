@@ -7,5 +7,6 @@ data class WhMeta(
     val current_page: Int? = null,
     val last_page: Int? = null,
     val per_page: Int? = null,
-    val total: Int? = null
+    val total: Int? = null,
+    val seed: String? = null
 )

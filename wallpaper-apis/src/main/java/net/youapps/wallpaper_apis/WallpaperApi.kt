@@ -21,6 +21,53 @@ abstract class WallpaperApi {
     open val availableFilters: Map<String, List<String>> = mapOf()
 
     /**
+     * Keys of [availableFilters] that allow selecting multiple options at once.
+     *
+     * The selected options of such a filter are stored as a comma separated list in [selectedFilters],
+     * e.g. `"general,anime"`. An empty value means that no option is selected.
+     */
+    open val multiSelectFilters: Set<String> = emptySet()
+
+    /**
+     * Keys of [multiSelectFilters] that may have no option selected at all, which means that the filter
+     * isn't applied. All other multi select filters require at least one selected option.
+     */
+    open val optionalFilters: Set<String> = emptySet()
+
+    /**
+     * The default value for every filter from [availableFilters].
+     */
+    open val defaultFilters: Map<String, String>
+        get() = availableFilters.mapValues { (_, values) -> values.first() }
+
+    /**
+     * Whether the filter with the given [key] is relevant for the currently selected [filters],
+     * e.g. a time range filter that only applies when sorting by top wallpapers.
+     */
+    open fun isFilterApplicable(key: String, filters: Map<String, String>): Boolean = true
+
+    /**
+     * Popular tags that can be added to the search with a single tap. Only relevant if [supportsTags] is `true`.
+     */
+    open val suggestedTags: List<String> = emptyList()
+
+    /**
+     * Whether tags can be excluded from the search by prefixing them with a `-`, e.g. `-cars`.
+     * Only relevant if [supportsTags] is `true`.
+     */
+    open val supportsTagExclusion: Boolean = false
+
+    /**
+     * Whether the API supports logging in with a personal API key, e.g. for unlocking NSFW content.
+     */
+    open val supportsApiKey: Boolean = false
+
+    /**
+     * The website on which users can find their API key. Only relevant if [supportsApiKey] is `true`.
+     */
+    open val apiKeyUrl: String? = null
+
+    /**
      * Whether the API supports searching by tags, i.e. a search query.
      */
     open val supportsTags: Boolean = false
@@ -46,7 +93,7 @@ abstract class WallpaperApi {
             _selectedFilters = value
         }
         get() = run {
-            _selectedFilters.ifEmpty { availableFilters.map { (key, values) -> key to values.first() }.toMap() }
+            _selectedFilters.ifEmpty { defaultFilters }
         }
 
     /**
@@ -58,6 +105,19 @@ abstract class WallpaperApi {
      * The name of the community. Only read if [requiresCommunityName] is `true`.
      */
     open var communityName: String? = null
+
+    /**
+     * The API key of the logged in user, or `null` if not logged in. Only read if [supportsApiKey] is `true`.
+     */
+    open var apiKey: String? = null
+
+    /**
+     * Check whether the given [apiKey] is valid, e.g. before logging in with it.
+     *
+     * @return `true` if the API key is valid
+     * @throws Exception if the validity couldn't be checked, e.g. due to network errors
+     */
+    open suspend fun validateApiKey(apiKey: String): Boolean = false
 
     /**
      * Load a list of wallpapers by respecting. [selectedTags] and [selectedFilters].

@@ -1,0 +1,7 @@
+What's new:
+* Wallhaven: select several categories, purities, aspect ratios and resolutions at once
+* Wallhaven: new minimum resolution, color, toplist range and "Hot" sorting filters
+* Tags: popular tag suggestions, excluded tags and adding several tags at once
+* Log in to Wallhaven with your API key in the settings to unlock NSFW wallpapers
+* Preview how a wallpaper looks on your home and lock screen before applying it
+* See the Material You theme Android would generate from a wallpaper
