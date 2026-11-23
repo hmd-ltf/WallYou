@@ -11,6 +11,7 @@ import com.bnyro.wallpaper.db.obj.Wallpaper
 import com.bnyro.wallpaper.enums.WallpaperTarget
 import com.bnyro.wallpaper.ui.components.dialogs.ListDialog
 import com.bnyro.wallpaper.ui.models.WallpaperHelperModel
+import com.bnyro.wallpaper.util.OfflineSyncWorker
 import com.bnyro.wallpaper.util.Preferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,6 +42,8 @@ fun ApplyWallpaperDialog(
                 if (Preferences.getBoolean(Preferences.wallpaperHistory, true)) {
                     DatabaseHolder.Database.favoritesDao()
                         .insert(wallpaper, null, true)
+                    // keep a copy, so that it can still be viewed and saved without internet
+                    OfflineSyncWorker.enqueue(context.applicationContext)
                 }
                 withContext(Dispatchers.Main) {
                     if (index == 3) {

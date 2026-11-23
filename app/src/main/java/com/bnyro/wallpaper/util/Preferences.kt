@@ -20,12 +20,14 @@ object Preferences {
     const val hueKey = "hue"
     const val brightnessKey = "brightness"
     const val autoLightenDarkenKey = "autoLightenDarken"
+    const val historyOfflineCountKey = "historyOfflineCount"
 
     const val wallpaperChangerKey = "wallpaperChanger"
     private const val wallpaperChangerConfigKey = "wallpaperChangerConfigurations"
 
     const val defaultDiskCacheSize = 128L * 1024 * 1024
     const val defaultWallpaperChangeInterval = 12L * 60
+    const val defaultHistoryOfflineCount = 10
 
     private const val prefFile = "preferences"
     private lateinit var preferences: SharedPreferences

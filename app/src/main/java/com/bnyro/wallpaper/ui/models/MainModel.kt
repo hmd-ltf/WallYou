@@ -1,5 +1,6 @@
 package com.bnyro.wallpaper.ui.models
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +15,8 @@ import com.bnyro.wallpaper.db.obj.Wallpaper
 import com.bnyro.wallpaper.enums.ThemeMode
 import com.bnyro.wallpaper.ui.nav.DrawerScreens
 import com.bnyro.wallpaper.util.Either
+import com.bnyro.wallpaper.util.FavoritesHelper
+import com.bnyro.wallpaper.util.OfflineWallpaperHelper
 import com.bnyro.wallpaper.util.Preferences
 import com.bnyro.wallpaper.util.WallpaperApiWrapper
 import kotlinx.coroutines.Dispatchers
@@ -77,17 +80,25 @@ class MainModel : ViewModel() {
         }
     }
 
-    fun addToFavorites(wallpaper: Wallpaper) = viewModelScope.launch(Dispatchers.IO) {
-        Database.favoritesDao().insert(wallpaper, true, null)
-    }
+    fun addToFavorites(context: Context, wallpaper: Wallpaper) =
+        viewModelScope.launch(Dispatchers.IO) {
+            FavoritesHelper.addToFavorites(context, wallpaper)
+        }
 
-    fun removeFromFavorites(wallpaper: Wallpaper) = viewModelScope.launch(Dispatchers.IO) {
-        Database.favoritesDao().removeFromFavorites(wallpaper)
-    }
+    fun removeFromFavorites(context: Context, wallpaper: Wallpaper) =
+        viewModelScope.launch(Dispatchers.IO) {
+            FavoritesHelper.removeFromFavorites(context, wallpaper)
+        }
 
-    fun removeRecentlyAppliedWallpaper(wallpaper: Wallpaper) =
+    fun removeRecentlyAppliedWallpaper(context: Context, wallpaper: Wallpaper) =
         viewModelScope.launch(Dispatchers.IO) {
             Database.favoritesDao().removeFromHistory(wallpaper)
+            OfflineWallpaperHelper.deleteUnusedFiles(context)
+        }
+
+    fun setTags(wallpaper: Wallpaper, tags: List<String>) =
+        viewModelScope.launch(Dispatchers.IO) {
+            Database.favoritesDao().setTags(wallpaper.imgSrc, tags)
         }
 
     fun clearWallpapers() {

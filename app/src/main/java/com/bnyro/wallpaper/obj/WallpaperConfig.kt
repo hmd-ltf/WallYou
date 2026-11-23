@@ -21,6 +21,10 @@ data class WallpaperConfig(
     var localFolderUris: List<String> = listOf(),
     var startTimeMillis: Long? = null,
     var endTimeMillis: Long? = null,
+    /** Only use favorites with any of these tags, all favorites if empty. */
+    var favoriteTags: List<String> = listOf(),
+    /** Only use wallpapers that generate a Material You theme of this color (ARGB), any if null. */
+    var themeColor: Int? = null,
 ) {
     fun getSummary(context: Context): String {
         val targetString = when (target) {

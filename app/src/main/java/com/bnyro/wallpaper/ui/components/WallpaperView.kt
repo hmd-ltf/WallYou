@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,9 +45,11 @@ import com.bnyro.wallpaper.ext.zoomArea
 import com.bnyro.wallpaper.ext.zoomImage
 import com.bnyro.wallpaper.ui.components.bottombar.WallpaperToolbar
 import com.bnyro.wallpaper.ui.components.bottombar.WallpaperViewTopBar
+import com.bnyro.wallpaper.ui.components.dialogs.FavoriteTagsDialog
 import com.bnyro.wallpaper.ui.components.dialogs.MultiStateDialog
 import com.bnyro.wallpaper.ui.components.infosheet.WallpaperInfoSheet
 import com.bnyro.wallpaper.ui.models.WallpaperHelperModel
+import com.bnyro.wallpaper.util.FavoritesHelper
 import com.bnyro.wallpaper.util.ImageHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,11 +71,13 @@ fun WallpaperView(
     var showModeSelection by remember { mutableStateOf(false) }
     var showPreview by remember { mutableStateOf(false) }
     var showThemeSheet by remember { mutableStateOf(false) }
+    var showTagsDialog by remember { mutableStateOf(false) }
+    val storedWallpaper by remember(wallpaper.imgSrc) {
+        Database.favoritesDao().findByImgSrcFlow(wallpaper.imgSrc)
+    }.collectAsState(initial = null)
     var liked by remember { mutableStateOf(false) }
-    LaunchedEffect(true) {
-        withContext(Dispatchers.IO) {
-            liked = Database.favoritesDao().isLiked(wallpaper.imgSrc)
-        }
+    LaunchedEffect(storedWallpaper) {
+        liked = storedWallpaper?.favorite == true
     }
 
     var cachedBitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -126,7 +131,7 @@ fun WallpaperView(
                 }
             )
             AsyncImage(
-                model = ImageHelper.buildRequest(context, wallpaper.imgSrc),
+                model = ImageHelper.buildRequest(context, wallpaper.fullImage),
                 contentDescription = stringResource(id = R.string.wallpaper),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
@@ -150,6 +155,12 @@ fun WallpaperView(
                     onClickInfo = {
                         showInfoSheet = true
                     },
+                    onClickTags = if (liked) {
+                        { showTagsDialog = true }
+                    } else {
+                        null
+                    },
+                    tagCount = storedWallpaper?.tags?.size ?: 0,
                     title = wallpaper.title ?: stringResource(id = R.string.wallpaper)
                 )
             }
@@ -181,9 +192,9 @@ fun WallpaperView(
                     liked = !liked
                     scope.launch(Dispatchers.IO) {
                         if (!liked) {
-                            Database.favoritesDao().removeFromFavorites(wallpaper)
+                            FavoritesHelper.removeFromFavorites(context, wallpaper)
                         } else {
-                            Database.favoritesDao().insert(wallpaper, true, null)
+                            FavoritesHelper.addToFavorites(context, wallpaper)
                         }
                     }
                 },
@@ -211,6 +222,26 @@ fun WallpaperView(
         WallpaperThemeSheet(
             bitmap = cachedBitmap,
             onDismissRequest = { showThemeSheet = false }
+        )
+    }
+    if (showTagsDialog) {
+        val scope = rememberCoroutineScope()
+        var allTags by remember { mutableStateOf(listOf<String>()) }
+        LaunchedEffect(Unit) {
+            allTags = withContext(Dispatchers.IO) {
+                FavoritesHelper.getAllTags(Database.favoritesDao().getFavorites())
+            }
+        }
+
+        FavoriteTagsDialog(
+            initialTags = storedWallpaper?.tags.orEmpty(),
+            suggestions = allTags,
+            onDismissRequest = { showTagsDialog = false },
+            onSave = { tags ->
+                scope.launch(Dispatchers.IO) {
+                    Database.favoritesDao().setTags(wallpaper.imgSrc, tags)
+                }
+            }
         )
     }
     if (showInfoSheet) {

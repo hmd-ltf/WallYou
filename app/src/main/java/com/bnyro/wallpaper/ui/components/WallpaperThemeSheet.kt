@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
@@ -66,19 +67,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bnyro.wallpaper.R
+import com.bnyro.wallpaper.ext.toast
+import com.bnyro.wallpaper.obj.WallpaperConfig
+import com.bnyro.wallpaper.ui.components.dialogs.ListDialog
 import com.bnyro.wallpaper.util.ClipboardHelper
 import com.bnyro.wallpaper.util.MaterialThemeGenerator
+import com.bnyro.wallpaper.util.Preferences
+import com.bnyro.wallpaper.util.ThemeColorHelper.toSamplePixels
 import com.materialkolor.dynamiccolor.DynamicScheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.math.max
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
-
-/**
- * Android extracts wallpaper colors from a downscaled image of about this many pixels.
- */
-private const val COLOR_EXTRACTION_AREA = 112 * 112
 
 /**
  * Bottom sheet showing the Material You theme that Android would generate from the wallpaper [bitmap].
@@ -158,6 +156,8 @@ fun WallpaperThemeSheet(
                 }
             }
 
+            UseInWallpaperChangerButton(seedColor = seed)
+
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 listOf(false, true).forEachIndexed { index, dark ->
                     SegmentedButton(
@@ -206,6 +206,54 @@ fun WallpaperThemeSheet(
             }
             ColorRoles(colorScheme)
         }
+    }
+}
+
+/**
+ * Only let the wallpaper changer apply wallpapers that generate a theme like the one of [seedColor].
+ */
+@Composable
+private fun UseInWallpaperChangerButton(seedColor: Int) {
+    val context = LocalContext.current
+    var configsToChoose by remember { mutableStateOf<List<WallpaperConfig>?>(null) }
+
+    fun applyTo(configId: Int) {
+        val configs = Preferences.getWallpaperConfigs()
+        configs.firstOrNull { it.id == configId }?.themeColor = seedColor
+        Preferences.setWallpaperConfigs(configs)
+        context.toast(context.getString(R.string.theme_color_applied))
+    }
+
+    OutlinedButton(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            val configs = Preferences.getWallpaperConfigs()
+            when {
+                configs.isEmpty() -> context.toast(context.getString(R.string.no_wallpaper_changer_rules))
+                configs.size == 1 -> applyTo(configs.first().id)
+                else -> configsToChoose = configs
+            }
+        }
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Wallpaper,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(stringResource(R.string.use_in_wallpaper_changer))
+    }
+
+    configsToChoose?.let { configs ->
+        ListDialog(
+            items = configs.map { it.getSummary(context) },
+            title = stringResource(R.string.use_in_wallpaper_changer),
+            onDismissRequest = { configsToChoose = null },
+            onClick = { index ->
+                applyTo(configs[index].id)
+                configsToChoose = null
+            }
+        )
     }
 }
 
@@ -407,23 +455,6 @@ private fun Int.luminance(): Float {
 /**
  * Downscale the bitmap like Android does before extracting the wallpaper colors and return its pixels.
  */
-private fun Bitmap.toSamplePixels(): IntArray {
-    val source = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && config == Bitmap.Config.HARDWARE) {
-        copy(Bitmap.Config.ARGB_8888, false)
-    } else {
-        this
-    }
-
-    val scale = sqrt(COLOR_EXTRACTION_AREA.toFloat() / (source.width * source.height)).coerceAtMost(1f)
-    val width = max(1, (source.width * scale).roundToInt())
-    val height = max(1, (source.height * scale).roundToInt())
-    val scaled = Bitmap.createScaledBitmap(source, width, height, true)
-
-    val pixels = IntArray(width * height)
-    scaled.getPixels(pixels, 0, width, 0, 0, width, height)
-    return pixels
-}
-
 /**
  * Convert the generated [DynamicScheme] to a Compose [ColorScheme].
  */

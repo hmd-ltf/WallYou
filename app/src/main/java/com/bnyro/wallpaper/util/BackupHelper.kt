@@ -33,8 +33,23 @@ object BackupHelper {
         try {
             context.contentResolver.openInputStream(uri)?.use {
                 val backupFile = RetrofitHelper.json.decodeFromStream<BackupFile>(it)
-                DatabaseHolder.Database.favoritesDao().insertAll(backupFile.favorites)
+                val dao = DatabaseHolder.Database.favoritesDao()
+                // keep the copies of already stored wallpapers that are saved on this device
+                val existing = dao.getAll().associateBy { wallpaper -> wallpaper.imgSrc }
+                dao.insertAll(backupFile.favorites.map { wallpaper ->
+                    val stored = existing[wallpaper.imgSrc] ?: return@map wallpaper
+                    wallpaper.copy(
+                        localPath = stored.localPath,
+                        seedColor = wallpaper.seedColor ?: stored.seedColor,
+                        tags = wallpaper.tags.ifEmpty { stored.tags }
+                    ).apply {
+                        // don't remove wallpapers from the history that are only in the backup as favorites
+                        inHistory = inHistory || stored.inHistory
+                    }
+                })
             }
+            // download the restored favorites for offline use
+            OfflineSyncWorker.enqueue(context.applicationContext)
             context.toastFromMainThread(context.getString(R.string.success))
         } catch (e: Exception) {
             context.toastFromMainThread(e.localizedMessage)
