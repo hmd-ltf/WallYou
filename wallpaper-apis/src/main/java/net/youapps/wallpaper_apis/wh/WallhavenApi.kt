@@ -46,8 +46,9 @@ class WallhavenApi : WallpaperApi() {
         }
     }
 
-    override val supportsTags: Boolean = true
-    override val supportsTagExclusion: Boolean = true
+    override val tagSearch = TagSearch.NATIVE
+    override val excludesTagsNatively = true
+    override val randomRespectsTags = true
     override val suggestedTags: List<String> = listOf(
         "nature",
         "landscape",
@@ -105,7 +106,7 @@ class WallhavenApi : WallpaperApi() {
 
         val response = api.search(
             page = page,
-            query = selectedTags.joinToString(" "),
+            query = searchQuery,
             categories = toBitmask(CATEGORY_OPTIONS, categories),
             purity = toBitmask(PURITY_OPTIONS, purity),
             sorting = sorting,

@@ -11,6 +11,8 @@ data class Wallpaper(
     val thumb: String? = null,
     val creationDate: String? = null,
     val description: String? = null,
+    /** Tags or keywords the source gave the wallpaper, used for searching it. */
+    val tags: List<String> = emptyList(),
 ) {
     val preview get() = thumb ?: imgSrc
 }

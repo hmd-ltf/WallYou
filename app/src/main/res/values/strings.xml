@@ -211,4 +211,13 @@
     <string name="use_in_wallpaper_changer">Use this theme in the wallpaper changer</string>
     <string name="theme_color_applied">The wallpaper changer now only uses wallpapers with this theme</string>
     <string name="no_wallpaper_changer_rules">Set up the wallpaper changer in the settings first</string>
+    <!-- Tag search for all wallpaper sources -->
+    <string name="tags_native_search_desc">Searched by %1$s. Exclude a tag to hide wallpapers that mention it.</string>
+    <string name="tags_local_search_desc">%1$s has no search, so its wallpapers are filtered by the words in their titles and descriptions.</string>
+    <string name="search_further">Search further</string>
+    <string name="no_wallpapers_found">No wallpapers found</string>
+    <string name="no_wallpapers_found_desc">Try other or fewer tags.</string>
+    <string name="no_wallpapers_found_local_desc">None of the wallpapers checked so far mention these tags. %1$s has no search, so you can search further through older wallpapers.</string>
+    <string name="loading_failed">Couldn\'t load wallpapers</string>
+    <string name="try_again">Try again</string>
 </resources>

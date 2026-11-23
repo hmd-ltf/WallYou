@@ -61,6 +61,23 @@ class ZedgeApi : WallpaperApi() {
         )
     )
 
+    override val tagSearch = TagSearch.NATIVE
+    override val randomRespectsTags = true
+    override val suggestedTags: List<String> = listOf(
+        "aesthetic",
+        "anime",
+        "cars",
+        "nature",
+        "dark",
+        "cute",
+        "space",
+        "neon",
+        "football",
+        "flowers",
+        "quotes",
+        "abstract"
+    )
+
     private val api = RetrofitHelper.create<Zedge>(baseUrl)
     private var nextPage: String? = null
 
@@ -78,7 +95,8 @@ class ZedgeApi : WallpaperApi() {
                 description = it.description,
                 creationDate = SimpleDateFormat.getDateInstance().format(it.dateUploaded),
                 author = it.profile.name,
-                category = it.tags.joinToString(", ")
+                category = it.tags.joinToString(", "),
+                tags = it.tags
             )
         }.awaitAll()
     }
@@ -220,7 +238,8 @@ fragment browseListProfileItemResource on BrowseProfileItem {
                         .takeIf { it != "all" }
                         ?.let { listOf(it) }
                         .orEmpty(),
-                    next = nextPage
+                    next = nextPage,
+                    keywords = includedTags
                 )
             )
         )

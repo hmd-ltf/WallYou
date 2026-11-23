@@ -15,6 +15,23 @@ class RedditApi : WallpaperApi() {
         "time" to listOf("month", "year", "hour", "day", "week")
     )
 
+    override val tagSearch = TagSearch.NATIVE
+    override val randomRespectsTags = true
+    override val suggestedTags: List<String> = listOf(
+        "4k",
+        "minimalist",
+        "landscape",
+        "space",
+        "city",
+        "forest",
+        "mountains",
+        "ocean",
+        "night",
+        "abstract",
+        "anime",
+        "oc"
+    )
+
     val api = RetrofitHelper.create<Reddit>(baseUrl)
 
     override var communityName: String? = "r/wallpaper"
@@ -31,12 +48,19 @@ class RedditApi : WallpaperApi() {
         if (page == 1) nextPageAfter = null
         val subreddit = communityName!!.replaceFirst("r/", "")
 
-        val xml = api.getRedditData(
-            subreddit,
-            selectedFilters["sort"]!!,
-            selectedFilters["time"],
-            nextPageAfter
-        ).string()
+        val sort = selectedFilters["sort"]!!
+        val xml = if (includedTags.isEmpty()) {
+            api.getRedditData(subreddit, sort, selectedFilters["time"], nextPageAfter)
+        } else {
+            api.search(
+                subreddit,
+                searchQuery,
+                // searching doesn't support sorting by rising posts
+                if (sort == "rising") "hot" else sort,
+                selectedFilters["time"],
+                nextPageAfter
+            )
+        }.string()
 
         val doc = Ksoup.parseXml(xml)
         val entries = doc.select("entry")

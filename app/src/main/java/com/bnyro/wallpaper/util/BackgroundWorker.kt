@@ -142,7 +142,7 @@ class BackgroundWorker(
             val source = config.selectedApiRoutes.random()
             val url = withContext(Dispatchers.IO) {
                 try {
-                    Preferences.getApiByRoute(source).getRandomWallpaperUrl()
+                    Preferences.getApiByRoute(source).randomWallpaperUrl()
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {

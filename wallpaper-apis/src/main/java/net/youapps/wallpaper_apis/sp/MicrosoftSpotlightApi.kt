@@ -7,25 +7,38 @@ import net.youapps.wallpaper_apis.sp.obj.SpotlightImage
 import java.util.Locale
 
 // Credits to https://github.com/ORelio/Spotlight-Downloader/blob/master/SpotlightAPI.md
-
 class MicrosoftSpotlightApi : WallpaperApi() {
     override val name = "Spotlight"
     override val baseUrl = "https://fd.api.iris.microsoft.com"
-
     override val availableFilters: Map<String, List<String>> = mapOf(
         "country" to listOf("US") + Locale.getISOCountries().toList().filter { it != "US" }
             .sorted(),
         "orientation" to listOf("portrait", "landscape")
+    )
+    override val suggestedTags: List<String> = listOf(
+        "mountain",
+        "lake",
+        "beach",
+        "forest",
+        "waterfall",
+        "canyon",
+        "desert",
+        "coast",
+        "island",
+        "snow"
     )
 
     private val api = RetrofitHelper.create<Spotlight>(baseUrl)
 
     override suspend fun getWallpapers(page: Int): List<Wallpaper> {
         val country = selectedFilters["country"]!!
+        // every request returns a new random selection of images
         val apiResp = api.getLatestPage(country = country, locale = "en-${country}")
+
         val images = apiResp.batchrsp.items.map {
             RetrofitHelper.json.decodeFromString<SpotlightImage>(it.item)
         }
+
         return images.map {
             Wallpaper(
                 title = it.ad.title,

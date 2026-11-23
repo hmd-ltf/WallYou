@@ -4,15 +4,23 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,13 +31,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.bnyro.wallpaper.R
+import com.bnyro.wallpaper.ui.components.NothingHere
 import com.bnyro.wallpaper.ui.components.ShimmerGrid
 import com.bnyro.wallpaper.ui.components.WallpaperGrid
 import com.bnyro.wallpaper.ui.components.WallpaperPageView
 import com.bnyro.wallpaper.ui.components.dialogs.FilterDialog
 import com.bnyro.wallpaper.ui.models.MainModel
 import kotlinx.coroutines.CancellationException
+import net.youapps.wallpaper_apis.WallpaperApi
 import kotlin.random.Random
 
 @Composable
@@ -89,8 +101,52 @@ fun WallpaperPage(
                     selectedIndex = null
                 }
             }
-        } else {
+
+            // sources without their own search may not find more matches in the next few pages
+            if (!viewModel.isLoading && viewModel.lastPageEmpty && viewModel.hasMoreResults) {
+                ExtendedFloatingActionButton(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp),
+                    onClick = { fetchMoreWallpapers() },
+                    icon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    text = { Text(stringResource(R.string.search_further)) }
+                )
+            }
+        } else if (viewModel.isLoading || !fetchedWallpapers) {
             ShimmerGrid()
+        } else if (viewModel.loadingFailed) {
+            NothingHere(
+                text = stringResource(R.string.loading_failed),
+                icon = Icons.Default.CloudOff
+            ) {
+                Button(onClick = { fetchMoreWallpapers() }) {
+                    Text(stringResource(R.string.try_again))
+                }
+            }
+        } else {
+            val hasTags = viewModel.api.selectedTags.isNotEmpty()
+            NothingHere(
+                text = stringResource(R.string.no_wallpapers_found),
+                icon = Icons.Default.SearchOff,
+                description = when {
+                    !hasTags -> null
+                    viewModel.api.tagSearch == WallpaperApi.TagSearch.LOCAL ->
+                        stringResource(R.string.no_wallpapers_found_local_desc, viewModel.api.name)
+                    else -> stringResource(R.string.no_wallpapers_found_desc)
+                }
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (viewModel.hasMoreResults) {
+                        Button(onClick = { fetchMoreWallpapers() }) {
+                            Text(stringResource(R.string.search_further))
+                        }
+                    }
+                    OutlinedButton(onClick = { showFilterDialog = true }) {
+                        Text(stringResource(R.string.filter))
+                    }
+                }
+            }
         }
 
         Column(

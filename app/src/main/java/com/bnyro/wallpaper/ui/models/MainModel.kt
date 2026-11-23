@@ -20,6 +20,8 @@ import com.bnyro.wallpaper.util.OfflineWallpaperHelper
 import com.bnyro.wallpaper.util.Preferences
 import com.bnyro.wallpaper.util.WallpaperApiWrapper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -59,25 +61,61 @@ class MainModel : ViewModel() {
 
     var page: Int = 1
 
+    /** Whether wallpapers are being loaded right now. */
+    var isLoading by mutableStateOf(false)
+        private set
+
+    /** Whether the last page that was loaded didn't contain any new wallpapers. */
+    var lastPageEmpty by mutableStateOf(false)
+        private set
+
+    /**
+     * Whether more wallpapers might be found, even if the last page was empty, e.g. because the
+     * source has no search and only a part of its wallpapers have been checked for the tags yet.
+     */
+    var hasMoreResults by mutableStateOf(true)
+        private set
+
+    /** Whether loading the last page failed. */
+    var loadingFailed by mutableStateOf(false)
+        private set
+
     private var wallpaperJob: Job? = null
     fun fetchWallpapers(onException: (Exception, WallpaperApiWrapper) -> Unit) {
+        // all wallpapers have been loaded already
+        if (lastPageEmpty && !hasMoreResults) return
+
         // ensure that only one job for loading new wallpapers is run at a time
         // this prevents that quick switching between different wallpaper sources causes the app
         // to display images from all sources, because they were still loading in the background
         wallpaperJob?.cancel()
-        wallpaperJob = viewModelScope.launch {
+        // started only after it's stored, so that it can recognize itself when finishing
+        val job = viewModelScope.launch(start = CoroutineStart.LAZY) {
+            isLoading = true
+            loadingFailed = false
             try {
                 val newWallpapers = withContext(Dispatchers.IO) {
-                    api.getWallpapers(page)
+                    api.search(page)
                 }.map { Wallpaper(it) }
                 // remove duplicated results - e.g. if multiple posts contain the same image
-                wallpapers = (wallpapers + newWallpapers).distinctBy { it.imgSrc }
+                val allWallpapers = (wallpapers + newWallpapers).distinctBy { it.imgSrc }
+                lastPageEmpty = allWallpapers.size == wallpapers.size
+                hasMoreResults = api.hasMoreResults
+                wallpapers = allWallpapers
                 page += 1
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(this.javaClass.name, e.toString())
+                loadingFailed = true
                 onException.invoke(e, api)
+            } finally {
+                // a newer job may have replaced this one in the meantime
+                if (wallpaperJob == coroutineContext[Job]) isLoading = false
             }
         }
+        wallpaperJob = job
+        job.start()
     }
 
     fun addToFavorites(context: Context, wallpaper: Wallpaper) =
@@ -104,5 +142,8 @@ class MainModel : ViewModel() {
     fun clearWallpapers() {
         wallpapers = listOf()
         page = 1
+        lastPageEmpty = false
+        hasMoreResults = true
+        loadingFailed = false
     }
 }
