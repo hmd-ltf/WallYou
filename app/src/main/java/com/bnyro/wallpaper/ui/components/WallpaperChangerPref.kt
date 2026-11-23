@@ -79,8 +79,14 @@ fun WallpaperChangerPrefDialog(
     var wallpaperTarget by remember { mutableStateOf(config.target) }
     var changeInterval by remember { mutableIntStateOf(config.changeIntervalMinutes) }
     var networkType by remember { mutableStateOf(config.networkType) }
-    val wallpaperSources =
-        listOf(R.string.online, R.string.favorites, R.string.local, R.string.none)
+    // one entry per source, so that every option maps to an existing [WallpaperSource]
+    val wallpaperSources = WallpaperSource.entries.map { source ->
+        when (source) {
+            WallpaperSource.ONLINE -> R.string.online
+            WallpaperSource.FAVORITES -> R.string.favorites
+            WallpaperSource.LOCAL -> R.string.local
+        }
+    }
     var wallpaperEnginesIndices = remember {
         config.selectedApiRoutes.map { route ->
             DrawerScreens.apiScreens.indexOfFirst { it.route == route }
