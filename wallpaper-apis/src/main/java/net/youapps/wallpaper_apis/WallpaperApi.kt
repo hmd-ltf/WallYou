@@ -68,6 +68,23 @@ abstract class WallpaperApi {
     open val apiKeyUrl: String? = null
 
     /**
+     * Whether the API supports logging in with a username and password, see [logIn].
+     */
+    open val supportsPasswordLogin: Boolean = false
+
+    /**
+     * Whether users have to enter the server (instance) of their account when logging in,
+     * e.g. for federated platforms. Only relevant if [supportsPasswordLogin] is `true`.
+     */
+    open val requiresInstanceForLogin: Boolean = false
+
+    /**
+     * Whether the user is logged in, either with an [apiKey] or a [loginSession].
+     */
+    val isLoggedIn: Boolean
+        get() = !apiKey.isNullOrBlank() || loginSession != null
+
+    /**
      * Whether the API supports searching by tags, i.e. a search query.
      */
     open val supportsTags: Boolean = false
@@ -110,6 +127,25 @@ abstract class WallpaperApi {
      * The API key of the logged in user, or `null` if not logged in. Only read if [supportsApiKey] is `true`.
      */
     open var apiKey: String? = null
+
+    /**
+     * The session of the logged in user, or `null` if not logged in. Only read if [supportsPasswordLogin] is `true`.
+     */
+    open var loginSession: LoginSession? = null
+
+    /**
+     * Log in with the given [credentials]. The returned session has to be set as [loginSession] afterwards.
+     *
+     * @throws LoginException if the login failed for a known reason, e.g. invalid credentials
+     * @throws Exception if the login failed for another reason, e.g. due to network errors
+     */
+    open suspend fun logIn(credentials: LoginCredentials): LoginSession =
+        throw UnsupportedOperationException("$name doesn't support logging in with a password")
+
+    /**
+     * Invalidate the given [session] on the server, if supported. Errors are ignored.
+     */
+    open suspend fun logOut(session: LoginSession) {}
 
     /**
      * Check whether the given [apiKey] is valid, e.g. before logging in with it.

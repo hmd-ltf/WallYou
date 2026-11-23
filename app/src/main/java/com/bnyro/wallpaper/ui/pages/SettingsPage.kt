@@ -48,7 +48,7 @@ import com.bnyro.wallpaper.obj.WallpaperConfig
 import com.bnyro.wallpaper.ui.components.ButtonWithIcon
 import com.bnyro.wallpaper.ui.components.WallpaperChangerPrefDialog
 import com.bnyro.wallpaper.ui.components.about.AboutContainer
-import com.bnyro.wallpaper.ui.components.prefs.ApiKeyPref
+import com.bnyro.wallpaper.ui.components.prefs.AccountPref
 import com.bnyro.wallpaper.ui.components.prefs.CheckboxPref
 import com.bnyro.wallpaper.ui.components.prefs.ListPreference
 import com.bnyro.wallpaper.ui.components.prefs.SettingsCategory
@@ -120,7 +120,7 @@ fun SettingsPage(
             }
         }
 
-        val apisWithLogin = remember { App.apis.filter { it.supportsApiKey } }
+        val apisWithLogin = remember { App.apis.filter { it.supportsLogin } }
         if (apisWithLogin.isNotEmpty()) {
             AboutContainer {
                 Column {
@@ -128,7 +128,7 @@ fun SettingsPage(
                         title = stringResource(R.string.accounts)
                     )
                     apisWithLogin.forEach { api ->
-                        ApiKeyPref(api = api)
+                        AccountPref(api = api)
                     }
                 }
             }

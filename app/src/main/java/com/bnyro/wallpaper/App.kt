@@ -81,15 +81,29 @@ class App : Application(), SingletonImageLoader.Factory {
     companion object {
         val apis by lazy {
             listOf(
-                WallpaperApiWrapper(WallhavenApi(), Icons.Default.Landscape),
+                WallpaperApiWrapper(
+                    WallhavenApi(),
+                    Icons.Default.Landscape,
+                    loginDescription = R.string.wallhaven_login_desc,
+                    loginHint = R.string.wallhaven_login_hint
+                ),
                 WallpaperApiWrapper(OwallsApi(), Icons.Default.Air),
-                WallpaperApiWrapper(UnsplashApi(), Icons.Default.WaterDrop),
+                WallpaperApiWrapper(
+                    UnsplashApi(),
+                    Icons.Default.WaterDrop,
+                    loginDescription = R.string.unsplash_login_desc
+                ),
                 WallpaperApiWrapper(PixabayApi(), Icons.Default.Palette),
                 WallpaperApiWrapper(ZedgeApi(), Icons.Default.ScreenLockLandscape),
                 WallpaperApiWrapper(WallpaperCaveApi(), Icons.Default.Deblur),
                 WallpaperApiWrapper(BingApi(), Icons.Default.Nightlight),
                 WallpaperApiWrapper(RedditApi(), Icons.Default.Forum),
-                WallpaperApiWrapper(LemmyApi(), Icons.Default.Book),
+                WallpaperApiWrapper(
+                    LemmyApi(),
+                    Icons.Default.Book,
+                    loginDescription = R.string.lemmy_login_desc,
+                    loginHint = R.string.lemmy_login_hint
+                ),
                 WallpaperApiWrapper(GooglePixelApi(), Icons.Default.Pix),
                 WallpaperApiWrapper(MicrosoftSpotlightApi(), Icons.Default.LightMode),
                 WallpaperApiWrapper(NasaPotdApi(), Icons.Default.Star),

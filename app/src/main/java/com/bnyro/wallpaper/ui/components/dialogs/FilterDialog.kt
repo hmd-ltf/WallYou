@@ -146,7 +146,8 @@ fun FilterDialog(
                     }
                 }
 
-                if (api.supportsApiKey && api.apiKey == null) {
+                val loginHint = api.loginHint
+                if (loginHint != null && !api.isLoggedIn) {
                     Row(
                         modifier = Modifier.padding(top = 5.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -159,7 +160,7 @@ fun FilterDialog(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = stringResource(R.string.log_in_to_unlock_nsfw),
+                            text = stringResource(loginHint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )

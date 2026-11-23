@@ -132,9 +132,9 @@
     <string name="get_api_key">Get API key</string>
     <string name="logged_in">Logged in</string>
     <string name="invalid_api_key">Invalid API key</string>
-    <string name="api_key_login_desc">Log in with your API key to unlock NSFW wallpapers. Once logged in, select NSFW in the purity filter.</string>
-    <string name="show_api_key">Show API key</string>
-    <string name="hide_api_key">Hide API key</string>
+    <string name="wallhaven_login_desc">Log in with your API key to unlock NSFW wallpapers. Once logged in, select NSFW in the purity filter.</string>
+    <string name="show_secret">Show</string>
+    <string name="hide_secret">Hide</string>
     <string name="preview">Preview</string>
     <string name="wallpaper_only">Wallpaper only</string>
     <string name="material_theme">Material You theme</string>
@@ -164,5 +164,20 @@
     <string name="sample_chip">Chip</string>
     <string name="sample_button">Button</string>
     <string name="sample_tonal">Tonal</string>
-    <string name="log_in_to_unlock_nsfw">Log in from the settings to unlock NSFW wallpapers</string>
+    <string name="wallhaven_login_hint">Log in from the settings to unlock NSFW wallpapers</string>
+    <string name="unsplash_login_desc">Log in with the Access Key of your Unsplash developer app to use the official Unsplash API instead of the website. Apps in demo mode are limited to 50 requests per hour.</string>
+    <string name="lemmy_login_desc">Log in with your Lemmy account to browse from your own instance, see posts from the communities you subscribed to and see NSFW posts if they are enabled in your account settings.</string>
+    <string name="lemmy_login_hint">Log in from the settings to browse the communities you subscribed to</string>
+    <string name="logged_in_as">Logged in as %1$s</string>
+    <string name="instance">Instance</string>
+    <string name="instance_hint">e.g. lemmy.world</string>
+    <string name="username_or_email">Username or email</string>
+    <string name="password">Password</string>
+    <string name="two_factor_code">Two-factor code</string>
+    <string name="two_factor_code_desc">Enter the code from your authenticator app</string>
+    <string name="invalid_login">Incorrect username or password</string>
+    <string name="invalid_two_factor_code">Incorrect two-factor code</string>
+    <string name="invalid_instance">Couldn\'t find a server at this address</string>
+    <string name="email_not_verified">Verify your email address before logging in</string>
+    <string name="account_not_approved">Your account hasn\'t been approved by the instance yet</string>
 </resources>
