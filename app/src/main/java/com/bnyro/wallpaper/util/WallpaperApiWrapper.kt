@@ -1,14 +1,27 @@
 package com.bnyro.wallpaper.util
 
+import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
+import net.youapps.wallpaper_apis.LoginCredentials
+import net.youapps.wallpaper_apis.LoginSession
+import net.youapps.wallpaper_apis.RetrofitHelper
 import net.youapps.wallpaper_apis.TextUtils
 import net.youapps.wallpaper_apis.Wallpaper
 import net.youapps.wallpaper_apis.WallpaperApi
 
 /**
  * A wrapper around [WallpaperApi] that uses [Preferences] to store the engine settings.
+ *
+ * @param loginDescription explains what logging in to the API does, shown in the settings
+ * @param loginHint shown in the filter dialog while not logged in, e.g. which filters logging in unlocks
  */
-class WallpaperApiWrapper(private val api: WallpaperApi, val icon: ImageVector): WallpaperApi() {
+class WallpaperApiWrapper(
+    private val api: WallpaperApi,
+    val icon: ImageVector,
+    @StringRes val loginDescription: Int? = null,
+    @StringRes val loginHint: Int? = null
+): WallpaperApi() {
     val route get() = api.name.replace(" ", "_").lowercase()
 
     // Delegated to underlying [api]
@@ -24,18 +37,28 @@ class WallpaperApiWrapper(private val api: WallpaperApi, val icon: ImageVector):
     override val requiresCommunityName: Boolean get() = api.requiresCommunityName
     override val supportsApiKey: Boolean get() = api.supportsApiKey
     override val apiKeyUrl: String? get() = api.apiKeyUrl
+    override val supportsPasswordLogin: Boolean get() = api.supportsPasswordLogin
+    override val requiresInstanceForLogin: Boolean get() = api.requiresInstanceForLogin
+
+    /**
+     * Whether the API supports logging in at all, either with an API key or a password.
+     */
+    val supportsLogin: Boolean get() = supportsApiKey || supportsPasswordLogin
 
     override fun isFilterApplicable(key: String, filters: Map<String, String>) =
         api.isFilterApplicable(key, filters)
 
     override suspend fun validateApiKey(apiKey: String): Boolean = api.validateApiKey(apiKey)
+    override suspend fun logIn(credentials: LoginCredentials): LoginSession = api.logIn(credentials)
+    override suspend fun logOut(session: LoginSession) = api.logOut(session)
 
     override suspend fun getWallpapers(page: Int): List<Wallpaper> = api.getWallpapers(page)
     override suspend fun getRandomWallpaperUrl(): String? = api.getRandomWallpaperUrl()
 
     init {
-        // the api key has to be set first, as it may change the available filters
+        // the login has to be set first, as it may change the available filters
         api.apiKey = apiKey
+        api.loginSession = loginSession
 
         migrateLegacyFilters()
 
@@ -60,6 +83,23 @@ class WallpaperApiWrapper(private val api: WallpaperApi, val icon: ImageVector):
             api.apiKey = value?.trim()?.takeIf { it.isNotBlank() }
 
             // the available filters may have changed, e.g. NSFW content is only available when logged in
+            api.selectedFilters = selectedFilters
+        }
+
+    override var loginSession: LoginSession?
+        get() = getPref("loginSession", "").takeIf { it.isNotBlank() }?.let {
+            try {
+                RetrofitHelper.json.decodeFromString<LoginSession>(it)
+            } catch (e: Exception) {
+                Log.e(this.javaClass.name, e.stackTraceToString())
+                null
+            }
+        }
+        set(value) {
+            setPref("loginSession", value?.let { RetrofitHelper.json.encodeToString(it) }.orEmpty())
+            api.loginSession = value
+
+            // the available filters may have changed, e.g. some feeds are only available when logged in
             api.selectedFilters = selectedFilters
         }
 

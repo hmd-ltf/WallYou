@@ -26,6 +26,8 @@
 - [x] Image Filter Effects
 - [x] Wallhaven multi-select filters (categories, purity, ratios, resolutions, colors) and tag suggestions
 - [x] Wallhaven login with an API key to unlock NSFW wallpapers
+- [x] Unsplash login with a developer Access Key to use the official Unsplash API
+- [x] Lemmy login with your account and instance to browse subscribed communities
 - [x] Full-screen home and lock screen preview before applying a wallpaper
 - [x] Material You theme preview generated from any wallpaper
 
