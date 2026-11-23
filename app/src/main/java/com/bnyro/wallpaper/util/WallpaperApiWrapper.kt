@@ -34,6 +34,10 @@ class WallpaperApiWrapper(
     override val supportsTags: Boolean get() = api.supportsTags
     override val suggestedTags: List<String> get() = api.suggestedTags
     override val supportsTagExclusion: Boolean get() = api.supportsTagExclusion
+    override val tagSearch: TagSearch get() = api.tagSearch
+    override val excludesTagsNatively: Boolean get() = api.excludesTagsNatively
+    override val randomRespectsTags: Boolean get() = api.randomRespectsTags
+    override val hasMoreResults: Boolean get() = api.hasMoreResults
     override val requiresCommunityName: Boolean get() = api.requiresCommunityName
     override val supportsApiKey: Boolean get() = api.supportsApiKey
     override val apiKeyUrl: String? get() = api.apiKeyUrl
@@ -54,6 +58,8 @@ class WallpaperApiWrapper(
 
     override suspend fun getWallpapers(page: Int): List<Wallpaper> = api.getWallpapers(page)
     override suspend fun getRandomWallpaperUrl(): String? = api.getRandomWallpaperUrl()
+    override suspend fun search(page: Int): List<Wallpaper> = api.search(page)
+    override suspend fun randomWallpaperUrl(): String? = api.randomWallpaperUrl()
 
     init {
         // the login has to be set first, as it may change the available filters

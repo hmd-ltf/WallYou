@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.bnyro.wallpaper.R
 import com.bnyro.wallpaper.ui.components.NothingHere
@@ -26,6 +27,7 @@ fun HistoryPage(viewModel: MainModel) {
             .fillMaxSize()
     ) {
         val history by viewModel.recentlyAppliedWallpapers.collectAsState()
+        val context = LocalContext.current
 
         var selectedIndex by rememberSaveable { mutableStateOf<Int?>(null) }
 
@@ -37,7 +39,7 @@ fun HistoryPage(viewModel: MainModel) {
                     selectedIndex = it
                 },
                 onDeleteWallpaper = { wallpaper ->
-                    viewModel.removeRecentlyAppliedWallpaper(wallpaper)
+                    viewModel.removeRecentlyAppliedWallpaper(context.applicationContext, wallpaper)
                 }
             )
             selectedIndex?.let {

@@ -2,7 +2,10 @@ package com.bnyro.wallpaper.ui.components.bottombar
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Label
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,7 +23,9 @@ fun WallpaperViewTopBar(
     modifier: Modifier = Modifier,
     title: String,
     onClickInfo: () -> Unit,
-    onClickBack: () -> Unit
+    onClickBack: () -> Unit,
+    onClickTags: (() -> Unit)? = null,
+    tagCount: Int = 0
 ) {
     TopAppBar(
         modifier = modifier,
@@ -34,6 +39,20 @@ fun WallpaperViewTopBar(
         },
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         actions = {
+            if (onClickTags != null) {
+                IconButton(onClick = onClickTags) {
+                    BadgedBox(
+                        badge = {
+                            if (tagCount > 0) Badge { Text(tagCount.toString()) }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.Label,
+                            contentDescription = stringResource(R.string.tags)
+                        )
+                    }
+                }
+            }
             IconButton(onClick = onClickInfo) {
                 Icon(
                     imageVector = Icons.Rounded.Info,

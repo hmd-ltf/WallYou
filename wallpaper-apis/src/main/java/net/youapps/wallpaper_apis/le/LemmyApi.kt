@@ -45,6 +45,21 @@ class LemmyApi : WallpaperApi() {
             "type" to if (loginSession == null) TYPE_OPTIONS else TYPE_OPTIONS + SUBSCRIBED
         )
 
+    override val tagSearch = TagSearch.NATIVE
+    override val randomRespectsTags = true
+    override val suggestedTags: List<String> = listOf(
+        "landscape",
+        "sunset",
+        "city",
+        "nature",
+        "animals",
+        "architecture",
+        "night",
+        "flowers",
+        "snow",
+        "beach"
+    )
+
     override var communityName: String? = "pics@lemmy.world"
 
     private val api = RetrofitHelper.create<Lemmy>(baseUrl)
@@ -70,17 +85,32 @@ class LemmyApi : WallpaperApi() {
 
         val response = try {
             // logged in users have to load the posts from their own instance, as the token is only valid there
-            getInstanceApi(session?.instanceUrl).getWallpapers(
-                page = page,
-                communityName = if (isSubscribedFeed) {
-                    null
-                } else {
-                    communityName ?: throw IllegalArgumentException("no community name specified")
-                },
-                sort = selectedFilters["sort"]!!,
-                type = type,
-                authorization = session?.let { bearer(it.token) }
-            )
+            val instanceApi = getInstanceApi(session?.instanceUrl)
+            val community = if (isSubscribedFeed) {
+                null
+            } else {
+                communityName ?: throw IllegalArgumentException("no community name specified")
+            }
+            val authorization = session?.let { bearer(it.token) }
+
+            if (includedTags.isEmpty()) {
+                instanceApi.getWallpapers(
+                    page = page,
+                    communityName = community,
+                    sort = selectedFilters["sort"]!!,
+                    type = type,
+                    authorization = authorization
+                )
+            } else {
+                instanceApi.search(
+                    query = searchQuery,
+                    page = page,
+                    communityName = community,
+                    listingType = type,
+                    sort = selectedFilters["sort"]!!,
+                    authorization = authorization
+                )
+            }
         } catch (e: HttpException) {
             if (session != null && e.code() == 401) {
                 throw Exception("Your Lemmy session has expired, please log in again from the settings")

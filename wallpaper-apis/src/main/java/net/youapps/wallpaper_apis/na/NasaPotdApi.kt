@@ -1,21 +1,33 @@
 package net.youapps.wallpaper_apis.na
 
-import net.youapps.wallpaper_apis.WallpaperApi
 import net.youapps.wallpaper_apis.RetrofitHelper
 import net.youapps.wallpaper_apis.Wallpaper
+import net.youapps.wallpaper_apis.WallpaperApi
 
 // https://api.nasa.gov/assets/files/apod/APOD-APIs-and-RSS-info.pdf
 class NasaPotdApi : WallpaperApi() {
     override val name: String = "NASA APOD"
     override val baseUrl: String = "https://science.nasa.gov/"
-
     override val availableFilters: Map<String, List<String>> = mapOf()
+    override val suggestedTags: List<String> = listOf(
+        "galaxy",
+        "nebula",
+        "milky way",
+        "moon",
+        "mars",
+        "jupiter",
+        "saturn",
+        "sun",
+        "aurora",
+        "eclipse",
+        "comet",
+        "star cluster"
+    )
 
     private val api = RetrofitHelper.create<NasaAPOD>(baseUrl)
 
     override suspend fun getWallpapers(page: Int): List<Wallpaper> {
         val response = api.getImages(page = page)
-
         return response
             .filter { it.mediaType == "image" }
             .map {

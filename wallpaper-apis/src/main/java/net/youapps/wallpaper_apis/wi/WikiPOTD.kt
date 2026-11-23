@@ -13,7 +13,9 @@ interface WikiPOTD {
         @Query("format") format: String = "json",
         @Query("generator") generator: String = "images",
         @Query("prop") prop: String = "imageinfo",
-        @Query("iiprop") iiProp: String = "url|size",
+        @Query("iiprop") iiProp: String = "url|size|extmetadata",
+        @Query("iiextmetadatafilter") extMetadataFilter: String = "ImageDescription|Categories|Artist|ObjectName",
+        @Query("iiextmetadatalanguage") extMetadataLanguage: String = "en",
         @Query("iiurlwidth") iiUrlWidth: String = "300",
         @Query("titles") titles: String, // separated by "|"
     ): WikiImagesResponse

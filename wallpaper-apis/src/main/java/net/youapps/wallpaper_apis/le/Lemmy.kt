@@ -25,6 +25,21 @@ interface Lemmy {
         @Header(AUTHORIZATION_HEADER) authorization: String? = null
     ): LemmyResponse
 
+    /**
+     * Search posts, see https://join-lemmy.org/api/main#operation/search.
+     */
+    @GET("api/v3/search")
+    suspend fun search(
+        @Query("q") query: String,
+        @Query("page") page: Int,
+        @Query("community_name") communityName: String?,
+        @Query("limit") limit: Int = 10,
+        @Query("type_") type: String = "Posts",
+        @Query("listing_type") listingType: String = "All",
+        @Query("sort") sort: String = "Active",
+        @Header(AUTHORIZATION_HEADER) authorization: String? = null
+    ): LemmyResponse
+
     @Headers("${RetrofitHelper.NO_LOGGING_HEADER}: 1")
     @POST("api/v3/user/login")
     suspend fun login(

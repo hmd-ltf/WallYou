@@ -14,13 +14,27 @@ class PixabayApi: WallpaperApi() {
         "content_type" to listOf("all", "authentic", "ai"),
         "colors" to listOf("all", "red", "green", "blue", "yellow", "turquoise", "lilac", "pink", "white", "gray", "black", "brown")
     )
-    override val supportsTags: Boolean = true
+    override val tagSearch = TagSearch.NATIVE
+    override val suggestedTags: List<String> = listOf(
+        "nature",
+        "landscape",
+        "sky",
+        "flowers",
+        "animals",
+        "city",
+        "abstract",
+        "space",
+        "ocean",
+        "forest",
+        "mountains",
+        "sunset"
+    )
 
     private val api = RetrofitHelper.create<Pixabay>(baseUrl)
 
     override suspend fun getWallpapers(page: Int): List<Wallpaper> {
         return api.getWallpapers(
-            query = selectedTags.joinToString(" "),
+            query = searchQuery,
             category = selectedFilters["category"]!!,
             pageNumber = page,
             orientation = selectedFilters["orientation"].takeIf { it != "all" },
@@ -36,7 +50,8 @@ class PixabayApi: WallpaperApi() {
                 description = result.description,
                 category = result.name,
                 resolution = "${result.width}x${result.height}",
-                creationDate = result.uploadDate
+                creationDate = result.uploadDate,
+                tags = result.tagList.mapNotNull { it.firstOrNull() }
             )
         }
     }

@@ -38,9 +38,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.bnyro.wallpaper.R
+import net.youapps.wallpaper_apis.TagMatcher
 import net.youapps.wallpaper_apis.WallpaperApi
 
-private const val EXCLUDE_PREFIX = "-"
+private const val EXCLUDE_PREFIX = TagMatcher.EXCLUDE_PREFIX
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,6 +73,21 @@ fun TagsEditor(
         tags = tags.filter { it.removePrefix(EXCLUDE_PREFIX) !in newTagNames } + newTags.distinct()
         onChange()
     }
+
+    Text(
+        text = stringResource(R.string.tags),
+        style = MaterialTheme.typography.labelLarge
+    )
+    Text(
+        text = stringResource(
+            if (api.tagSearch == WallpaperApi.TagSearch.LOCAL) R.string.tags_local_search_desc
+            else R.string.tags_native_search_desc,
+            api.name
+        ),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(modifier = Modifier.height(4.dp))
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp)

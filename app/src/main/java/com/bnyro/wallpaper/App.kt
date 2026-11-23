@@ -25,6 +25,7 @@ import coil3.disk.directory
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import com.bnyro.wallpaper.db.DatabaseHolder
+import com.bnyro.wallpaper.util.OfflineSyncWorker
 import com.bnyro.wallpaper.util.Preferences
 import com.bnyro.wallpaper.util.WallpaperApiWrapper
 import net.youapps.wallpaper_apis.RetrofitHelper
@@ -52,6 +53,9 @@ class App : Application(), SingletonImageLoader.Factory {
         Preferences.init(this)
 
         DatabaseHolder.create(this)
+
+        // download favorites that aren't available offline yet, e.g. after updating the app
+        OfflineSyncWorker.enqueue(this, afterRunningSync = false)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {

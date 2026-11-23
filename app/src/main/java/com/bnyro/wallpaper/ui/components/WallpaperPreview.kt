@@ -112,7 +112,7 @@ fun WallpaperPreview(
                 model = ImageHelper.buildRequest(context, wallpaper.preview)
             )
             AsyncImage(
-                model = ImageHelper.buildRequest(context, wallpaper.imgSrc),
+                model = ImageHelper.buildRequest(context, wallpaper.fullImage),
                 contentDescription = stringResource(R.string.wallpaper_preview),
                 contentScale = contentScale,
                 modifier = Modifier.fillMaxSize(),

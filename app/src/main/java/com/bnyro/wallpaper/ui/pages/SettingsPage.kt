@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,6 +55,8 @@ import com.bnyro.wallpaper.ui.components.prefs.ListPreference
 import com.bnyro.wallpaper.ui.components.prefs.SettingsCategory
 import com.bnyro.wallpaper.ui.models.MainModel
 import com.bnyro.wallpaper.util.BackupHelper
+import com.bnyro.wallpaper.util.OfflineSyncWorker
+import com.bnyro.wallpaper.util.OfflineWallpaperHelper
 import com.bnyro.wallpaper.util.Preferences
 import com.bnyro.wallpaper.util.WorkerHelper
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +86,14 @@ fun SettingsPage(
             }
         }
 
+    // download or delete offline copies of recently applied wallpapers when the settings change
+    fun updateOfflineWallpapers() {
+        scope.launch(Dispatchers.IO) {
+            OfflineWallpaperHelper.deleteUnusedFiles(context)
+        }
+        OfflineSyncWorker.enqueue(context)
+    }
+
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -111,7 +122,9 @@ fun SettingsPage(
                     prefKey = Preferences.wallpaperHistory,
                     title = stringResource(R.string.wallpaper_history),
                     defaultValue = true
-                )
+                ) {
+                    updateOfflineWallpapers()
+                }
                 CheckboxPref(
                     prefKey = Preferences.autoLightenDarkenKey,
                     title = stringResource(R.string.auto_darken_lighten_by_theme),
@@ -153,6 +166,24 @@ fun SettingsPage(
                     entries = cacheSizes.map { it.formatBinarySize() },
                     values = cacheSizes.map { it.toString() },
                     defaultValue = Preferences.defaultDiskCacheSize.toString()
+                )
+                val historyOfflineCounts = listOf(0, 5, 10, 20, 50)
+                ListPreference(
+                    prefKey = Preferences.historyOfflineCountKey,
+                    title = stringResource(R.string.history_offline_count),
+                    entries = historyOfflineCounts.map {
+                        if (it == 0) stringResource(R.string.off) else it.toString()
+                    },
+                    values = historyOfflineCounts.map { it.toString() },
+                    defaultValue = Preferences.defaultHistoryOfflineCount.toString()
+                ) {
+                    updateOfflineWallpapers()
+                }
+                Text(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    text = stringResource(R.string.history_offline_count_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

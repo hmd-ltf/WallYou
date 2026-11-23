@@ -22,15 +22,24 @@ class ImgthApi: WallpaperApi() {
         } else {
             api.getCategory(communityName!!, page - 1)
         }
-        val doc = Ksoup.parse(response.string())
 
+        val doc = Ksoup.parse(response.string())
         return doc.select("a.thumbnail").map {
-            val thumbnail = it.select("img").attr("src")
+            val image = it.select("img")
+            val thumbnail = image.attr("src")
                 .replace("http://", "https://")
+            val href = it.attr("href")
+
             Wallpaper(
                 imgSrc = thumbnail.replace("/thumbs/", "/images/"),
                 thumb = thumbnail,
-                url = baseUrl + it.attr("href")
+                url = baseUrl + href,
+                // the image names are only available as alternative texts or in the links
+                title = listOf(image.attr("alt"), image.attr("title"), it.attr("title"))
+                    .firstOrNull { text -> text.isNotBlank() }
+                    ?: href.substringAfterLast("/").replace("-", " ").takeIf { name ->
+                        name.any { char -> char.isLetter() }
+                    }
             )
         }
     }

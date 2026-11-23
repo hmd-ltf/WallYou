@@ -8,7 +8,9 @@ interface Bing {
     @GET("HPImageArchive.aspx")
     suspend fun getImages(
         // limit must be <= 7
-        @Query("n") limit: Int = 7,
+        @Query("n") limit: Int = 8,
+        // how many days ago the newest image was shown, at most 7
+        @Query("idx") index: Int = 0,
         @Query("format") format: String = "js"
     ): BingImageResponse
 }

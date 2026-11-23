@@ -180,4 +180,44 @@
     <string name="invalid_instance">Couldn\'t find a server at this address</string>
     <string name="email_not_verified">Verify your email address before logging in</string>
     <string name="account_not_approved">Your account hasn\'t been approved by the instance yet</string>
+    <!-- Offline favorites and history -->
+    <string name="available_offline">Available offline</string>
+    <string name="history_offline_count">Recently applied wallpapers kept offline</string>
+    <string name="history_offline_count_desc">Favorites are always saved on your device. Recently applied wallpapers are kept too, so you can still look at, save or like them without internet.</string>
+    <string name="off">Off</string>
+    <!-- Tags of favorites -->
+    <string name="tags">Tags</string>
+    <string name="add_tag">Add tag</string>
+    <string name="no_tags">No tags yet</string>
+    <string name="remove">Remove</string>
+    <string name="your_tags">Your tags</string>
+    <string name="all">All</string>
+    <string name="favorite_tags_filter">Tags</string>
+    <string name="favorite_tags_filter_desc">Only use favorites with any of the selected tags. Select none to use all favorites.</string>
+    <string name="favorite_tags_filter_empty">Tag your favorites to only use some of them here.</string>
+    <!-- Filter by Material You theme -->
+    <string name="theme_color_filter">Material theme</string>
+    <string name="theme_color_filter_desc">Only use wallpapers that generate a Material You theme of this color.</string>
+    <string name="any_theme">Any theme</string>
+    <string name="wallpaper_theme_color">Theme color of a wallpaper</string>
+    <string name="color_red">Red</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="color_green">Green</string>
+    <string name="color_teal">Teal</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_purple">Purple</string>
+    <string name="color_pink">Pink</string>
+    <string name="use_in_wallpaper_changer">Use this theme in the wallpaper changer</string>
+    <string name="theme_color_applied">The wallpaper changer now only uses wallpapers with this theme</string>
+    <string name="no_wallpaper_changer_rules">Set up the wallpaper changer in the settings first</string>
+    <!-- Tag search for all wallpaper sources -->
+    <string name="tags_native_search_desc">Searched by %1$s. Exclude a tag to hide wallpapers that mention it.</string>
+    <string name="tags_local_search_desc">%1$s has no search, so its wallpapers are filtered by the words in their titles and descriptions.</string>
+    <string name="search_further">Search further</string>
+    <string name="no_wallpapers_found">No wallpapers found</string>
+    <string name="no_wallpapers_found_desc">Try other or fewer tags.</string>
+    <string name="no_wallpapers_found_local_desc">None of the wallpapers checked so far mention these tags. %1$s has no search, so you can search further through older wallpapers.</string>
+    <string name="loading_failed">Couldn\'t load wallpapers</string>
+    <string name="try_again">Try again</string>
 </resources>

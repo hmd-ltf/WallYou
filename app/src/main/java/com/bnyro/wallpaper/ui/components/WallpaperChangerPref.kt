@@ -5,6 +5,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +19,9 @@ import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +41,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.NetworkType
 import com.bnyro.wallpaper.R
+import com.bnyro.wallpaper.db.DatabaseHolder
 import com.bnyro.wallpaper.enums.WallpaperSource
 import com.bnyro.wallpaper.enums.WallpaperTarget
 import com.bnyro.wallpaper.ext.formatTime
@@ -48,8 +53,11 @@ import com.bnyro.wallpaper.ui.components.prefs.ListPreference
 import com.bnyro.wallpaper.ui.components.prefs.MultiSelectionBlockPreference
 import com.bnyro.wallpaper.ui.components.prefs.SettingsCategory
 import com.bnyro.wallpaper.ui.nav.DrawerScreens
+import com.bnyro.wallpaper.util.FavoritesHelper
 import com.bnyro.wallpaper.util.PickFolderContract
 import com.bnyro.wallpaper.util.str
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private val networkTypes = listOf(
     R.string.all_networks to NetworkType.CONNECTED,
@@ -58,6 +66,7 @@ private val networkTypes = listOf(
     R.string.not_roaming to NetworkType.NOT_ROAMING,
 )
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WallpaperChangerPrefDialog(
     config: WallpaperConfig,
@@ -75,7 +84,23 @@ fun WallpaperChangerPrefDialog(
     var wallpaperEnginesIndices = remember {
         config.selectedApiRoutes.map { route ->
             DrawerScreens.apiScreens.indexOfFirst { it.route == route }
+        }.filter { it >= 0 } // the source may have been removed in the meantime
+    }
+    val favoriteTags = remember {
+        config.favoriteTags.toMutableStateList()
+    }
+    var allFavoriteTags by remember {
+        mutableStateOf(config.favoriteTags)
+    }
+    LaunchedEffect(Unit) {
+        allFavoriteTags = withContext(Dispatchers.IO) {
+            val favorites = DatabaseHolder.Database.favoritesDao().getFavorites()
+            // also show selected tags that are no longer used, so that they can be deselected
+            (FavoritesHelper.getAllTags(favorites) + config.favoriteTags).distinct()
         }
+    }
+    var themeColor by remember {
+        mutableStateOf(config.themeColor)
     }
     val localFolderUris = remember {
         config.localFolderUris.toMutableStateList()
@@ -121,6 +146,8 @@ fun WallpaperChangerPrefDialog(
                     applyImageFilters = applyImageFilters,
                     startTimeMillis = if (hasStartAndEndTime) startTimeMillis else null,
                     endTimeMillis = if (hasStartAndEndTime) endTimeMillis else null,
+                    favoriteTags = favoriteTags.toList(),
+                    themeColor = themeColor,
                 )
                 onConfigChange(newConfig)
                 onDismissRequest()
@@ -278,8 +305,54 @@ fun WallpaperChangerPrefDialog(
                             }
                         }
 
+                        WallpaperSource.FAVORITES -> Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            SettingsCategory(title = stringResource(R.string.favorite_tags_filter))
+                            Text(
+                                modifier = Modifier.padding(horizontal = 10.dp),
+                                text = stringResource(
+                                    if (allFavoriteTags.isEmpty()) R.string.favorite_tags_filter_empty
+                                    else R.string.favorite_tags_filter_desc
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            FlowRow(
+                                modifier = Modifier.padding(horizontal = 10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                allFavoriteTags.forEach { tag ->
+                                    FilterChip(
+                                        selected = tag in favoriteTags,
+                                        onClick = {
+                                            if (tag in favoriteTags) favoriteTags.remove(tag)
+                                            else favoriteTags.add(tag)
+                                        },
+                                        label = { Text(tag) }
+                                    )
+                                }
+                            }
+                        }
+
                         else -> Unit
                     }
+                }
+
+                SettingsCategory(title = stringResource(R.string.theme_color_filter))
+                Column(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.theme_color_filter_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    ThemeColorPicker(
+                        selectedColor = themeColor,
+                        onColorSelected = { themeColor = it }
+                    )
                 }
 
                 CheckboxPref(

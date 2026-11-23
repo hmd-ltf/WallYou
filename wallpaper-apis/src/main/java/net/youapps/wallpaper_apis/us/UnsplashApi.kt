@@ -14,7 +14,22 @@ class UnsplashApi : WallpaperApi() {
         "orientation" to listOf("any", "landscape", "portrait", "squarish"),
        "order_by" to listOf("latest", "oldest", "popular")
     )
-    override val supportsTags: Boolean = true
+    override val tagSearch = TagSearch.NATIVE
+    override val randomRespectsTags = true
+    override val suggestedTags: List<String> = listOf(
+        "nature",
+        "wallpapers",
+        "architecture",
+        "travel",
+        "mountains",
+        "ocean",
+        "night sky",
+        "forest",
+        "flowers",
+        "textures",
+        "minimal",
+        "street photography"
+    )
 
     // logging in with the Access Key of an Unsplash developer app switches to the official API
     override val supportsApiKey: Boolean = true
@@ -40,25 +55,22 @@ class UnsplashApi : WallpaperApi() {
 
         val wallpapers = withReadableErrors {
             when {
-                accessKey != null && selectedTags.isEmpty() -> officialApi.getWallpapers(
+                accessKey != null && includedTags.isEmpty() -> officialApi.getWallpapers(
                     UnsplashOfficial.authorization(accessKey), page, sortOrder
                 )
 
                 accessKey != null -> officialApi.searchWallpapers(
                     UnsplashOfficial.authorization(accessKey),
                     page,
-                    selectedTags.joinToString(" "),
+                    searchQuery,
                     orientation,
                     // the official search only supports sorting by relevance or date
                     if (sortOrder == "latest") "latest" else "relevant"
                 ).results
 
-                selectedTags.isEmpty() -> api.getWallpapers(page, orientation, sortOrder)
+                includedTags.isEmpty() -> api.getWallpapers(page, orientation, sortOrder)
 
-                else -> {
-                    val tagString = selectedTags.joinToString(" ")
-                    api.searchWallpapers(page, tagString, orientation, sortOrder).results
-                }
+                else -> api.searchWallpapers(page, searchQuery, orientation, sortOrder).results
             }
         }
 
@@ -76,7 +88,7 @@ class UnsplashApi : WallpaperApi() {
     }
 
     override suspend fun getRandomWallpaperUrl(): String? {
-        val tagString = selectedTags.joinToString(" ")
+        val tagString = searchQuery
         val accessKey = apiKey?.takeIf { it.isNotBlank() }
 
         val image: UsImage = withReadableErrors {
