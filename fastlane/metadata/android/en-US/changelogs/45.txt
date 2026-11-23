@@ -1,0 +1,8 @@
+What's new:
+* Favorites are saved on your device and work without internet
+* Recently applied wallpapers are kept offline, so you can still save or like them later
+* Tag your favorites, filter them by tag and let the wallpaper changer only use some tags
+* Wallpaper changer: only use wallpapers that generate a Material You theme of a chosen color
+* Search every source by tags, and exclude tags with a leading "-"
+* Messages instead of endless loading when nothing was found or loading failed
+* Fixed crashes in the wallpaper changer settings and at the end of the Google Pixel list
